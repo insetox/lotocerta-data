@@ -1,0 +1,40 @@
+name: Atualizar Histórico de Loterias Diariamente
+
+on:
+  # Agendamento: O servidor usa horário UTC. 
+  # 23:00 UTC corresponde exatamente às 20:00 no horário de Brasília (BRT)
+  schedule:
+    - cron: '0 23 * * *'
+  
+  # Permite rodar manualmente clicando em um botão, ótimo para testar!
+  workflow_dispatch: 
+
+jobs:
+  atualizar-dados:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Baixar os arquivos do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Rodar o script de atualização
+        run: python atualizador.py
+
+      - name: Salvar (Commit) os novos JSONs no repositório
+        run: |
+          git config --global user.name "Bot LotoCerta"
+          git config --global user.email "bot@lotocerta.app"
+          git add *.json
+          
+          # Verifica se algum arquivo JSON mudou. Se mudou, faz o commit e envia.
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Atualização automática de sorteios" && git push)
