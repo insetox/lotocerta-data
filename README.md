@@ -1,0 +1,1 @@
+# lotocerta-data
